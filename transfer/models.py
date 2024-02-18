@@ -50,6 +50,11 @@ class TransferDonation:
         self.donee = donee
         self.expect_amount = expect_amount
 
+        self.donation_number = f'{donor.id}-{donee.id}-{self.id}'
+
+        self.notes = []
+        self.transactions = []
+
         self.created = created
         self.modified = modified
 
@@ -61,11 +66,12 @@ class TransferDonation:
     def add_note(cls, donation, note):
         transaction = TransferTransaction(donation,
                                           note,
-                                          status=TransferTransactionStatus.PENDING)
+                                          note.amount,
+                                          status=TransferTransactionStatus.PENDING,
+                                          created=note.date_confirmed,
+                                          modified=note.date_confirmed)
 
         donation.notes.append(note)
-        donation.transactions.append(transaction)
-
         TransferDonation.set_to_wait_for_approve(donation, transaction)
 
     @classmethod
@@ -77,9 +83,10 @@ class TransferDonation:
     def set_to_paid(cls, donation, transaction, date_confirmed=None):
         transaction.status = TransferTransactionStatus.PAID
 
+        donation.date_confirmed = date_confirmed or transaction.created
+        donation.amount = transaction.amount
+
         donation.status = TransferDonationStatus.PAID
-        if date_confirmed:
-            donation.date_confirmed = date_confirmed
 
     @classmethod
     def set_to_cancelled(cls, donation):
@@ -92,15 +99,21 @@ class TransferDonation:
 
 class TransferDonationNote:
     id: int
+    file_url: str
+
+    amount: float
+    date_confirmed: datetime
+
     note: str
 
-    file_url: str
     created: datetime
     modified: datetime
 
     donation: TransferDonation
 
     def __init__(self,
+                 amount,
+                 date_confirmed,
                  file_url,
                  note,
                  donation,
@@ -108,8 +121,13 @@ class TransferDonationNote:
                  modified=datetime.datetime.now()
                  ):
         self.id = TransferDonationNote.next_id()
-        self.note = note
+
+        self.amount = amount
+        self.date_confirmed = date_confirmed
+
         self.file_url = file_url
+        self.note = note
+
         self.donation = donation
 
         self.created = created
@@ -122,6 +140,7 @@ class TransferDonationNote:
 
 class TransferTransaction:
     id: int
+    amount: float
 
     status: TransferTransactionStatus
     created: datetime
@@ -133,6 +152,7 @@ class TransferTransaction:
     def __init__(self,
                  donation,
                  note,
+                 amount,
                  status=TransferTransactionStatus.PENDING,
                  created=datetime.datetime.now(),
                  modified=datetime.datetime.now()):
@@ -140,6 +160,7 @@ class TransferTransaction:
         self.status = status
         self.donation = donation
         self.note = note
+        self.amount = amount
         self.created = created
         self.modified = modified
 

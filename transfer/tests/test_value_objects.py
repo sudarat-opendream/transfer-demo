@@ -16,7 +16,7 @@ def donor_company():
 
 
 @pytest.fixture
-def project_donee():
+def donee_project():
     return Donee(uuid.uuid4(), "Project", "PROJ")
 
 
@@ -51,9 +51,24 @@ def test_donor_change_information(donor_individual, donor_company):
         donor_company.name = 'John Comp.'
 
 
-def test_donee(project_donee, donee_fundraiser):
-    assert project_donee.name == 'Project'
-    assert project_donee.donee_type == 'PROJ'
+def test_donee(donee_project, donee_fundraiser):
+    assert donee_project.name == 'Project'
+    assert donee_project.donee_type == 'PROJ'
 
     assert donee_fundraiser.name == 'Fundraiser'
     assert donee_fundraiser.donee_type == 'FUND'
+
+
+def test_donee_change_information(donee_project, donee_fundraiser):
+    assert donee_project.name == 'Project'
+    assert donee_project.donee_type == 'PROJ'
+
+    with pytest.raises(AttributeError):
+        donee_project.name = 'Project 2'
+
+    assert donee_fundraiser.name == 'Fundraiser'
+    assert donee_fundraiser.donee_type == 'FUND'
+
+    with pytest.raises(AttributeError):
+        donee_fundraiser.name = 'Fundraiser 2'
+
