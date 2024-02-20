@@ -1,7 +1,8 @@
 import datetime
 from enum import Enum
 
-from transfer.values_objects import Donor, Donee
+from common.domain.value_objects import Money
+from transfer.domain.values_objects import Donor, Donee
 
 
 class TransferDonationStatus(Enum):
@@ -28,7 +29,7 @@ class TransferDonation:
     donee: Donee
     donation_number: str
 
-    expect_amount: float
+    expect_amount: Money
     status: TransferDonationStatus = TransferDonationStatus.WAIL_FOR_TRANSFER
 
     date_confirmed: datetime
@@ -84,7 +85,7 @@ class TransferDonation:
         transaction.status = TransferTransactionStatus.PAID
 
         donation.date_confirmed = date_confirmed or transaction.created
-        donation.amount = transaction.amount
+        donation.expect_amount = transaction.amount
 
         donation.status = TransferDonationStatus.PAID
 
@@ -101,7 +102,7 @@ class TransferDonationNote:
     id: int
     file_url: str
 
-    amount: float
+    amount: Money
     date_confirmed: datetime
 
     note: str
@@ -140,7 +141,7 @@ class TransferDonationNote:
 
 class TransferTransaction:
     id: int
-    amount: float
+    amount: Money
 
     status: TransferTransactionStatus
     created: datetime

@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from transfer.values_objects import Donor, Donee
+from transfer.domain.values_objects import Donor, Donee
 
 
 @pytest.fixture
